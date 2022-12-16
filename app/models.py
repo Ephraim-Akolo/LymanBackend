@@ -1,14 +1,14 @@
 from .database import Base
-from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Date
+from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Date, TIMESTAMP, text
 
 SHORT_STR = 20
 
-LONG_STR = 50
+LONG_STR = 100
 
 DESCRIPTION = 1000
 
 
-class DB_Products(Base):
+class Product(Base):
 
     __tablename__ = "products"
 
@@ -27,7 +27,7 @@ class DB_Products(Base):
     instock = Column(Boolean, nullable=True)
 
 
-class DB_Customer(Base):
+class Customer(Base):
 
     __tablename__ = "customers"
 
@@ -42,7 +42,7 @@ class DB_Customer(Base):
     password = Column(String(LONG_STR), nullable=False)
 
 
-class DB_Artistan(Base):
+class Artistan(Base):
 
     __tablename__ = "artistans"
 
@@ -61,13 +61,15 @@ class DB_Artistan(Base):
     birth_date = Column(Date)
 
 
-class DB_Purchase(Base):
+class Purchase(Base):
 
     __tablename__ = "purchases"
 
     order_id = Column(Integer, primary_key=True, nullable=False)
 
     customer_id = Column(Integer, ForeignKey('customers.id', ondelete="CASCADE"), nullable=False)
+
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
     artistan_id = Column(Integer, ForeignKey('artistans.id', ondelete="CASCADE"), nullable=True)
 
@@ -76,7 +78,7 @@ class DB_Purchase(Base):
     
 
 
-class DB_Order(Base):
+class Order(Base):
     
     __tablename__ = "orders"
 

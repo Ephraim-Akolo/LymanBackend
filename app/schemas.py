@@ -1,31 +1,50 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import date
-# from typing import Optional
+from typing import Optional
 
 
 class Authenticate(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 
 class Customer(BaseModel):
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr
     password: str
     confirm_password: str
 
 
-class Artistan(BaseModel):
-    first_name: str
-    last_name: str
+class Artistan(Customer):
     birth_date: date
-    email: str
     qualification: str
-    password: str
-    confirm_password: str
+
 
 class Orders(BaseModel):
-    customer_id: int
     product_quantity_ids: dict[int, int]
+
+
+class CustomerResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    class Config:
+        orm_mode = True
+
+
+class ArtistanResponse(CustomerResponse):
+    birth_date: date
+    qualification: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
+    type: Optional[str] = None
     
