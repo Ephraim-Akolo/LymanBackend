@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.database import engine, Base
+from .database import engine, Base
 from .routers import artistans, customers, products, auth
 
 Base.metadata.create_all(engine)
