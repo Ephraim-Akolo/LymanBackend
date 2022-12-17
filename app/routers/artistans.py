@@ -1,6 +1,7 @@
 from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
-from .. import schemas, utils, oauth2
+from .. import schemas, utils, oauth2, machinelearning
+from typing import List
 from .. import models as db_models
 from ..database import get_session
 
@@ -25,13 +26,12 @@ def signup_artistan(artistan: schemas.Artistan, db_session:Session = Depends(get
 
 @router.get("/profile", response_model=schemas.CustomerResponse)
 def get_artistan_details(db_session:Session = Depends(get_session), artistan_data:schemas.TokenData = Depends(oauth2.get_current_artistan)):
-    artistan = db_session.query(db_models.Customer).filter(db_models.Artistan.id==artistan_data.id).first()
+    artistan = db_session.query(db_models.Artistan).filter(db_models.Artistan.id==artistan_data.id).first()
     if not artistan:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No artistan with id ({id}) found!")
     return artistan
 
-@router.get('/recommender/{quantity}')
-def recommend_artistans(quantity:int, customer_data:schemas.TokenData = Depends(oauth2.get_current_customer)):
-    # rank artistans based on last found order
-    return {"recommendations": "fcuck you!"}
+@router.get('/recommender/{quantity}', response_model=List[schemas.ArtistanResponse])
+def recommend_artistans(quantity:int,  db_session:Session = Depends(get_session), customer_data:schemas.TokenData = Depends(oauth2.get_current_customer)):
+    return machinelearning.predictor(customer_data.id, db_session, quantity)
 
