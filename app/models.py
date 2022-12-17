@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, Date, TIMESTAMP, text
+from sqlalchemy import Column, Integer, Float, ForeignKey, String, Boolean, Date, TIMESTAMP, text
 
 SHORT_STR = 20
 
@@ -16,11 +16,13 @@ class Product(Base):
 
     name = Column(String(SHORT_STR), nullable=False)
 
-    price = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
 
     image = Column(String(100), nullable=False)
 
     category = Column(String(SHORT_STR))
+
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
     discription = Column(String(DESCRIPTION), nullable=False)
 
@@ -37,6 +39,8 @@ class Customer(Base):
 
     last_name = Column(String(SHORT_STR), nullable=False)
 
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+
     email = Column(String(LONG_STR), nullable=False, unique=True)
 
     password = Column(String(LONG_STR), nullable=False)
@@ -51,6 +55,8 @@ class Artistan(Base):
     first_name = Column(String(SHORT_STR), nullable=False)
 
     last_name = Column(String(SHORT_STR), nullable=False)
+
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
     email = Column(String(LONG_STR), nullable=False, unique=True)
 
