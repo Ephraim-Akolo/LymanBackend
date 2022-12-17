@@ -1,5 +1,6 @@
 from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from .. import schemas, oauth2
 from .. import models as db_models
 from ..database import get_session
@@ -15,10 +16,16 @@ def create_order(order: schemas.Orders, db_session:Session = Depends(get_session
     db_session.add(new_purchase)
     db_session.commit()
     db_session.refresh(new_purchase)
-    for p, q in order.product_quantity_ids.items():
-        new_order = db_models.Order(order_id=new_purchase.order_id, product_id=int(p), quantity=q)
-        db_session.add(new_order)
+    try:
+        for p, q in order.product_quantity_ids.items():
+            new_order = db_models.Order(order_id=new_purchase.order_id, product_id=int(p), quantity=q)
+            db_session.add(new_order)
+            db_session.commit()
+    except SQLAlchemyError as e:
+        db_session.rollback()
+        db_session.delete(new_purchase)
         db_session.commit()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"no product with id {p} found!")
     return {"customer_id": new_purchase.customer_id, "order_id": new_purchase.order_id}
 
 @router.get('/{quantity}') #response_model=List[schemas.ArtistanResponse] ## from typing import List

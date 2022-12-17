@@ -30,21 +30,27 @@ def predictor(customer_id:int, db_session:Session, num_recommendations:int=10):
     
     prev_orders = np.array(prev_orders)
 
-    # get the boundaries of the products and order tables
-    min_order_id, max_order_id = prev_orders[0, 0], prev_orders[-1, 0]
-
-    # max_product_id = prev_orders[:, 1].max()
-
     # create the boolean vector from product id
     last_order_vector = np.zeros(product_table_max_id)
     last_order_vector[np.array(last_order)[:, 0]-1] = 1
     
-    # adjust the table to start from zero for both orders and products ids
-    prev_orders[:, 0] -= min_order_id
+    # adjust the table to start from zero for products ids and order ids
     prev_orders[:, 1] -= 1
-
+    j = 0
+    _l = len(prev_orders)-1
+    for i in range(len(np.unique(prev_orders[:, 0]))):
+        while prev_orders[j, 0] == prev_orders[j+1, 0]:
+            prev_orders[j, 0] = i
+            j += 1
+            if j == _l:
+                prev_orders[j, 0] = i
+                break
+        else:
+            prev_orders[j, 0] = i
+            j += 1
+    max_order_id = i
     # create a sparse matrix order X product
-    product_orders_matrix = csr_matrix((np.ones(len(prev_orders)), (prev_orders[:, 0], prev_orders[:, 1])), shape=(max_order_id-min_order_id+1, product_table_max_id))
+    product_orders_matrix = csr_matrix((np.ones(len(prev_orders)), (prev_orders[:, 0], prev_orders[:, 1])), shape=(max_order_id+1, product_table_max_id))
     similarities = cosine_similarity(last_order_vector, product_orders_matrix)
 
     # unique_order_ids = np.unique(prev_orders[:, 0])
@@ -71,3 +77,4 @@ def predictor(customer_id:int, db_session:Session, num_recommendations:int=10):
     return sorted_artistans
     
 
+    
