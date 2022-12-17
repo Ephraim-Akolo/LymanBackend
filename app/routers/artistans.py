@@ -6,7 +6,7 @@ from .. import models as db_models
 from ..database import get_session
 
 router = APIRouter(
-    prefix="/v1/artistans",
+    prefix="/api/v1/artistans",
     tags=["Artistans"]
 )
 

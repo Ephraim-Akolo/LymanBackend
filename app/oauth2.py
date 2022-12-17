@@ -4,8 +4,8 @@ from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from . import schemas, models as db_model
 
-oauth2_scheme_customers = OAuth2PasswordBearer(tokenUrl="v1/login/customers", scheme_name='Customer')
-oauth2_scheme_artistans = OAuth2PasswordBearer(tokenUrl="v1/login/artistans", scheme_name='Artistan')
+oauth2_scheme_customers = OAuth2PasswordBearer(tokenUrl="/api/v1/login/customers", scheme_name='Customer')
+oauth2_scheme_artistans = OAuth2PasswordBearer(tokenUrl="/api/v1/login/artistans", scheme_name='Artistan')
 
 SECRET_KEY = "a24a58ab7d8691b306d39d94470af6ad9075f704c2a34ba86776120132e68ee7"
 ALGORITHM = "HS256"
