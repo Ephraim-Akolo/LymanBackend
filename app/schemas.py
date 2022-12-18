@@ -39,6 +39,37 @@ class ArtistanResponse(CustomerResponse):
     qualification: str
 
 
+class ProductsResponse(BaseModel):
+    id:int
+    name:str
+    price:float
+    image:str
+    category:str
+    discription:str
+    instock:bool
+    class Config:
+        orm_mode = True
+
+
+class PurchaseResponse(BaseModel):
+    order_id:int
+    created_at:date
+    artistan_id:Optional[int] = None
+    rating:Optional[int] = None
+    class Config:
+        orm_mode = True
+
+
+class OrderResponse(BaseModel):
+    order_id:int
+    product:ProductsResponse
+    quantity:int
+    shipped:bool
+    delivered:bool
+    class Config:
+        orm_mode = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
