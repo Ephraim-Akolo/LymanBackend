@@ -1,5 +1,6 @@
 from .database import Base
 from sqlalchemy import Column, Integer, Float, ForeignKey, String, Boolean, Date, TIMESTAMP, text
+from sqlalchemy.orm import relationship
 
 SHORT_STR = 20
 
@@ -26,7 +27,7 @@ class Product(Base):
 
     discription = Column(String(DESCRIPTION), nullable=False)
 
-    instock = Column(Boolean, nullable=True)
+    instock = Column(Boolean, nullable=True, default=True)
 
 
 class Customer(Base):
@@ -99,4 +100,6 @@ class Order(Base):
     shipped = Column(Boolean, default=False)
 
     delivered = Column(Boolean, default=False)
+
+    product = relationship("Product")
 
