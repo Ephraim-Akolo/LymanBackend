@@ -1,4 +1,4 @@
-from .database import get_session
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from . import models as db_models
 import numpy as np
@@ -21,12 +21,15 @@ def predictor(customer_id:int, db_session:Session, num_recommendations:int=10):
     purchases = db_session.query(db_models.Purchase).with_entities(db_models.Purchase.order_id, db_models.Purchase.rating, db_models.Purchase.artistan_id) \
         .filter(db_models.Purchase.artistan_id > 0).order_by(db_models.Purchase.order_id.asc()).limit(10**5).all()
     purchases = np.array(purchases)
-    last_purchase = db_session.query(db_models.Purchase).with_entities(db_models.Purchase.order_id).filter(db_models.Purchase.customer_id==customer_id).order_by(db_models.Purchase.created_at.desc()).limit(1).first()[0]
-    
+    last_purchase = db_session.query(db_models.Purchase).with_entities(db_models.Purchase.order_id).filter(db_models.Purchase.customer_id==customer_id).order_by(db_models.Purchase.created_at.desc()).limit(1).first()
+    if last_purchase is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No record of order found!")
+    last_purchase = last_purchase[0]
     # get the products ids of the previous orders and customer recent order
     last_order = db_session.query(db_models.Order).filter(db_models.Order.order_id==last_purchase).with_entities(db_models.Order.product_id).all()
     prev_orders = db_session.query(db_models.Order).with_entities(db_models.Order.order_id, db_models.Order.product_id).filter(db_models.Order.order_id.in_(purchases[:, 0])).order_by(db_models.Order.order_id.asc()).all()
-    product_table_max_id = db_session.query(db_models.Product).with_entities(db_models.Product.id).order_by(db_models.Product.id.desc()).limit(1).first()[0] + 1
+    product_table_max_id = db_session.query(db_models.Product).with_entities(db_models.Product.id).order_by(db_models.Product.id.desc()).limit(1).first()
+    product_table_max_id = product_table_max_id[0] + 1
     
     prev_orders = np.array(prev_orders)
 
@@ -64,7 +67,7 @@ def predictor(customer_id:int, db_session:Session, num_recommendations:int=10):
     rating_ranking = np.argsort(recommended_orders[:, 1])[::-1]
     recommended_artistans = recommended_orders[rating_ranking, 2]
     recommended_artistans = recommended_artistans[np.sort(np.unique(recommended_artistans, return_index=True)[1])][:num_recommendations].tolist()
-    
+
     artistans = db_session.query(db_models.Artistan).filter(db_models.Artistan.id.in_(recommended_artistans)).all()
     _artistan_len = len(artistans)
     
