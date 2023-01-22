@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["Artistans"]
 )
 
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.ArtistanResponse)
+@router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=schemas.ArtistanResponse)
 def signup_artistan(artistan: schemas.Artistan, db_session:Session = Depends(get_session)):
     if artistan.password != artistan.confirm_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
