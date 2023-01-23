@@ -1,5 +1,6 @@
 from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from .. import schemas, utils, oauth2, machinelearning
 from typing import List
 from .. import models as db_models
@@ -9,6 +10,18 @@ router = APIRouter(
     prefix="/api/v1/artistans",
     tags=["Artistans"]
 )
+
+@router.get("/", response_model=schemas.CustomerResponse)
+def get_artistans(db_session:Session = Depends(get_session), qualification:str="", search:str="", limit:int=20, skip:int=0):
+    artistan = db_session.query(db_models.Artistan)
+    if qualification != "":
+        artistan = artistan.filter(db_models.Artistan.qualification.contains(qualification))
+    if search != '':
+        artistan = artistan.filter(or_(db_models.Artistan.first_name.contains(search), db_models.Artistan.last_name.contains(search)))
+    artistan = artistan.limit(limit).offset(skip).all()
+    if not artistan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no artistan found!")
+    return artistan
 
 @router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=schemas.ArtistanResponse)
 def signup_artistan(artistan: schemas.Artistan, db_session:Session = Depends(get_session)):
