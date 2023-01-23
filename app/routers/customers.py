@@ -32,3 +32,18 @@ def get_customer_details(db_session:Session = Depends(get_session), customer_dat
     if not customer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No customer with id ({id}) found!")
     return customer
+
+@router.put("/rating", response_model=schemas.PurchaseResponse)
+def update_artistan_rating(artistan_id:int, rating:int, order_id:int, db_session:Session = Depends(get_session), customer_data:schemas.TokenData = Depends(oauth2.get_current_customer)):
+    order = db_session.query(db_models.Purchase).filter(db_models.Purchase.order_id == order_id).filter(db_models.Customer.id == customer_data.id)
+    artistan = db_session.query(db_models.Artistan).filter(db_models.Artistan.id == artistan_id).first()
+    if not artistan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No Artistan with id {artistan_id} found!")
+    if not order.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No order with id {order_id} found!")
+    if rating > 5 or rating < 1:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="'rating' must be in the range of '1' and '5'")
+    order.update({db_models.Purchase.artistan_id: artistan_id, db_models.Purchase.rating: rating}, synchronize_session=False)
+    db_session.commit()
+    return order.first()
+
