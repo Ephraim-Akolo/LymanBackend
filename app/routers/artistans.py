@@ -28,6 +28,9 @@ def signup_artistan(artistan: schemas.Artistan, db_session:Session = Depends(get
     if artistan.password != artistan.confirm_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=f"unmatched passwords!")
+    existing_user = db_session.query(db_models.Artistan).filter(db_models.Artistan.email == artistan.email).first()
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail=f"artistan with email '{artistan.email}' already exist!")
     artistan.password = utils.hash(artistan.password)
     params = artistan.dict()
     params.pop("confirm_password")

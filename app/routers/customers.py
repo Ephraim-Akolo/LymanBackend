@@ -14,6 +14,9 @@ def signup_customers(customer: schemas.Customer, db_session:Session = Depends(ge
     if customer.password != customer.confirm_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=f"unmatched passwords!")
+    existing_user = db_session.query(db_models.Customer).filter(db_models.Customer.email == customer.email).first()
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, detail=f"customer with email '{customer.email}' already exist!")
     customer.password = utils.hash(customer.password)
     params = customer.dict()
     params.pop("confirm_password")
