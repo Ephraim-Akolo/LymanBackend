@@ -25,12 +25,18 @@ def get_products(db_session:Session = Depends(get_session), category:str="", sea
     return products
 
 @router.get('/orders/{order_id}', response_model=List[schemas.OrderResponse])
-def get_orders(order_id:int, db_session:Session = Depends(get_session), customer_data: schemas.TokenData = Depends(oauth2.get_current_customer)):
+def get_orders_with_id(order_id:int, db_session:Session = Depends(get_session), customer_data: schemas.TokenData = Depends(oauth2.get_current_customer)):
     orders = db_session.query(db_models.Order).join(db_models.Purchase).filter(db_models.Purchase.customer_id == customer_data.id, db_models.Order.order_id == order_id).all()
     if not orders:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"you have no orders with id {order_id}!")
     return orders
-    
+
+@router.get('/orders', status_code=status.HTTP_200_OK, response_model=List[schemas.PurchaseResponse])
+def get_order(db_session:Session = Depends(get_session), customer_data: schemas.TokenData = Depends(oauth2.get_current_customer)):
+    orders = db_session.query(db_models.Purchase).filter(db_models.Purchase.customer_id == customer_data.id).all()
+    if not orders:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"you have no orders yet!")
+    return orders
 
 @router.post('/orders', status_code=status.HTTP_201_CREATED, response_model=schemas.PurchaseResponse)
 def create_order(order: schemas.Orders, db_session:Session = Depends(get_session), customer_data: schemas.TokenData = Depends(oauth2.get_current_customer)):
