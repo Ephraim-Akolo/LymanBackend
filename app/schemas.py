@@ -34,9 +34,16 @@ class CustomerResponse(BaseModel):
         orm_mode = True
 
 
-class ArtistanResponse(CustomerResponse):
+class ArtistanResponse(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
     birth_date: date
     qualification: str
+    rating:Optional[float] = None
+    class Config:
+        orm_mode = True
 
 
 class ProductsResponse(BaseModel):
